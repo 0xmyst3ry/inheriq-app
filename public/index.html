@@ -1,280 +1,431 @@
 <!doctype html>
+<!-- SPDX-License-Identifier: AGPL-3.0-only -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Inheriq Workspace</title>
+<title>Inheriq</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400..700&family=DM+Mono:wght@400;500&display=swap">
 <style>
 :root {
   --ink: #17123A; --ink-2: #2A2457; --haldi: #FFC629; --paper: #F3F0FF; --paper-2: #E4DEFA; --white: #fff;
-  --muted: #5B5680; --muted-on-ink: #B9B3DE; --ok: #0F8F4E; --ok-soft: #D5F3E1; --warn: #8F5600; --warn-soft: #FFE9B8; --bad: #D12B3B;
+  --muted: #5B5680; --muted-on-ink: #B9B3DE; --ok: #0F8F4E; --ok-soft: #D5F3E1; --warn: #8F5600; --warn-soft: #FFE9B8; --bad: #D12B3B; --bad-soft: #FFE3E6;
   --font-display: "Archivo", "Arial Narrow", Impact, sans-serif;
   --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-body); line-height: 1.5; }
-button, input, textarea { font: inherit; color: inherit; }
+button, input, textarea, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 h1, h2, h3, p, ul, ol, dl { margin: 0; padding: 0; }
 :focus-visible { outline: 3px solid #8466FF; outline-offset: 2px; }
-.app { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: 100vh; }
-
-/* Sidebar */
+.app { display: grid; grid-template-columns: 310px minmax(0, 1fr); min-height: 100vh; }
 .side { background: var(--ink); color: var(--white); padding: 20px 16px; display: flex; flex-direction: column; gap: 18px; max-height: 100vh; overflow-y: auto; position: sticky; top: 0; }
 .brand { font: 800 1.6rem/1 var(--font-display); font-variation-settings: "wdth" 90; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
 .brand i { width: 14px; height: 14px; border-radius: 50%; background: var(--haldi); box-shadow: 10px 0 0 -2px #FF6A3D inset; }
-.brand small { font: 500 0.66rem/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-on-ink); margin-left: auto; }
 .lbl { font: 500 0.68rem/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-on-ink); }
-details.mem summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+.main .lbl { color: var(--muted); }
+details.mem summary { cursor: pointer; list-style: none; }
 details.mem summary::-webkit-details-marker { display: none; }
-details.mem textarea { margin-top: 10px; width: 100%; min-height: 190px; resize: vertical; background: var(--ink-2); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; color: var(--white); padding: 10px 12px; font: 400 0.8rem/1.5 var(--font-mono); }
-.group { display: grid; gap: 6px; }
-.agent { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; background: transparent; color: var(--white); padding: 8px 10px; border-radius: 12px; }
+details.mem textarea { margin-top: 10px; width: 100%; min-height: 170px; resize: vertical; background: var(--ink-2); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; color: var(--white); padding: 10px 12px; font: 400 0.78rem/1.5 var(--font-mono); }
+.group { display: grid; gap: 4px; }
+.agent { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; background: transparent; color: var(--white); padding: 7px 10px; border-radius: 12px; }
 .agent:hover { background: var(--ink-2); }
 .agent[aria-selected="true"] { background: var(--white); color: var(--ink); }
 .av { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font: 800 1rem/1 var(--font-display); background: var(--c); color: var(--on); flex: none; }
-.agent b { display: block; font-size: 0.92rem; line-height: 1.2; }
+.agent b { display: block; font-size: 0.9rem; line-height: 1.2; }
 .agent small { font-size: 0.74rem; opacity: 0.7; }
-.st { margin-left: auto; width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; opacity: 0.35; flex: none; }
+.st { margin-left: auto; width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; opacity: 0.3; flex: none; }
 .st.running { opacity: 1; border-color: var(--haldi); border-top-color: transparent; animation: spin .7s linear infinite; }
 .st.done { opacity: 1; background: var(--ok); border-color: var(--ok); }
+.st.wait { opacity: 1; background: #E8A317; border-color: #E8A317; }
 .st.error { opacity: 1; background: var(--bad); border-color: var(--bad); }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 20px; border: 2px solid var(--ink); border-radius: 99px; font-weight: 700; background: var(--white); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 18px; border: 2px solid var(--ink); border-radius: 99px; font-weight: 700; background: var(--white); font-size: 0.92rem; }
 .btn:hover:not([disabled]) { background: var(--ink); color: var(--haldi); }
 .btn[disabled] { opacity: .5; cursor: wait; }
 .btn.primary { background: var(--haldi); }
-.btn.primary:hover:not([disabled]) { background: var(--ink); color: var(--haldi); }
 .btn.go { background: var(--ink); color: var(--haldi); }
 .btn.go:hover:not([disabled]) { background: var(--ink-2); }
 .btn.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
+.btn.ok:hover:not([disabled]) { background: var(--ink); color: var(--haldi); border-color: var(--ink); }
+.btn.sm { min-height: 34px; padding: 0 14px; font-size: 0.82rem; }
+.btn.danger:hover:not([disabled]) { background: var(--bad); border-color: var(--bad); color: #fff; }
 .side .btn { border-color: var(--haldi); background: transparent; color: var(--haldi); width: 100%; }
 .side .btn:hover:not([disabled]) { background: var(--haldi); color: var(--ink); }
-
-/* Main */
+.side .foot { margin-top: auto; font: 400 0.72rem/1.5 var(--font-mono); color: var(--muted-on-ink); }
+.side .foot a { color: var(--haldi); }
 .main { padding: clamp(16px, 3vw, 36px); display: grid; gap: 20px; align-content: start; min-width: 0; }
 .bar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; justify-content: space-between; }
-.chip { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 99px; font: 500 0.72rem/1.3 var(--font-mono); background: var(--paper-2); }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab { border: 2px solid var(--ink); background: var(--white); border-radius: 99px; padding: 6px 16px; font-weight: 700; font-size: 0.9rem; }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--haldi); }
+.tab em { font-style: normal; background: #E8A317; color: var(--ink); border-radius: 99px; padding: 0 7px; margin-left: 6px; font: 500 0.72rem/1.6 var(--font-mono); }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 99px; font: 500 0.72rem/1.4 var(--font-mono); background: var(--paper-2); white-space: nowrap; }
 .chip.ok { background: var(--ok-soft); color: var(--ok); }
 .chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.bad { background: var(--bad-soft); color: var(--bad); }
 .chip.dark { background: var(--ink); color: var(--white); }
 .chip i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.conn { background: var(--white); border: 2px solid var(--ink); border-radius: 18px; padding: 14px 18px; }
-.conn summary { cursor: pointer; font-weight: 700; }
-.conn .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; align-items: center; }
-.conn input { flex: 1 1 200px; min-height: 42px; padding: 0 14px; border: 2px solid var(--ink); border-radius: 12px; background: var(--paper); min-width: 0; }
-.conn p { font-size: 0.84rem; color: var(--muted); margin-top: 8px; }
 .head { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: center; }
 .head .av { width: 64px; height: 64px; border-radius: 18px; font-size: 2rem; border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
 .head h1 { font: 800 clamp(2rem, 4vw, 3rem)/1 var(--font-display); font-variation-settings: "wdth" 80; letter-spacing: -0.02em; }
 .head p { color: var(--muted); }
-.head .chip { margin-left: auto; }
+.head .sp { margin-left: auto; display: grid; gap: 6px; justify-items: end; }
+.route { display: flex; align-items: center; gap: 8px; font: 500 0.74rem var(--font-mono); color: var(--muted); }
+.route select { max-width: 220px; }
 .card { background: var(--white); border: 2px solid var(--ink); border-radius: 22px; padding: clamp(16px, 2.4vw, 26px); display: grid; gap: 14px; min-width: 0; }
-.card textarea { width: 100%; min-height: 150px; resize: vertical; border: 2px solid var(--ink); border-radius: 14px; background: var(--paper); padding: 12px 14px; line-height: 1.5; font-size: 0.95rem; }
+textarea, input[type=text], input[type=password], input[type=url], select { border: 2px solid var(--ink); border-radius: 12px; background: var(--paper); padding: 9px 12px; min-width: 0; }
+.card textarea.big { width: 100%; min-height: 140px; resize: vertical; line-height: 1.5; font-size: 0.95rem; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .actions .sp { flex: 1; }
 .kbd { font: 500 0.72rem var(--font-mono); color: var(--muted); }
-.out h3 { font: 800 clamp(1.5rem, 2.6vw, 2.1rem)/1.05 var(--font-display); font-variation-settings: "wdth" 85; letter-spacing: -0.01em; text-wrap: balance; }
+.out h3, .sec h2 { font: 800 clamp(1.4rem, 2.6vw, 2rem)/1.08 var(--font-display); font-variation-settings: "wdth" 85; letter-spacing: -0.01em; text-wrap: balance; }
 .out-top { display: flex; flex-wrap: wrap; gap: 10px 16px; justify-content: space-between; align-items: flex-start; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .gate { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; font-size: 0.92rem; }
-.gate.warn { background: var(--warn-soft); }
-.gate.ok { background: var(--ok-soft); }
-.gate b { font: 500 0.7rem/1.6 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.gate.warn { background: var(--warn-soft); } .gate.ok { background: var(--ok-soft); } .gate.bad { background: var(--bad-soft); }
+.gate b { font: 500 0.7rem/1.7 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
 .facts { display: grid; border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; }
 .facts div { display: grid; grid-template-columns: minmax(120px, 0.38fr) 1fr; gap: 14px; padding: 10px 14px; }
 .facts div + div { border-top: 1px solid var(--paper-2); }
-.facts dt { font-weight: 700; font-size: 0.88rem; }
-.facts dd { margin: 0; font-size: 0.92rem; }
+.facts dt { font-weight: 700; font-size: 0.88rem; } .facts dd { margin: 0; font-size: 0.92rem; }
 .steps { padding-left: 20px; display: grid; gap: 6px; font-size: 0.95rem; }
 .draft { position: relative; border: 2px dashed var(--ink); border-radius: 16px; padding: 16px; background: var(--paper); display: grid; gap: 10px; }
-.draft.sent { border-style: solid; border-color: var(--ok); background: #fff; }
+.draft.approved, .draft.auto { border-style: solid; border-color: var(--ok); background: #fff; }
 .draft.rejected { border-color: var(--bad); }
-.draft-meta { font: 500 0.74rem/1.4 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
+.draft-meta { font: 500 0.74rem/1.4 var(--font-mono); color: var(--muted); padding-right: 150px; }
 .draft .body { white-space: pre-wrap; font-size: 0.97rem; }
 .draft .body[contenteditable="true"] { outline: 2px solid #8466FF; outline-offset: 4px; border-radius: 4px; background: #fff; }
-.stamp { position: absolute; right: 14px; top: 12px; transform: rotate(-6deg); padding: 4px 10px; border: 2px solid currentColor; border-radius: 6px; font: 500 0.74rem/1.2 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; background: #fff; animation: stamp .3s ease-out; }
+.stamp { position: absolute; right: 14px; top: 12px; transform: rotate(-6deg); padding: 4px 10px; border: 2px solid currentColor; border-radius: 6px; font: 500 0.72rem/1.2 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; background: #fff; animation: stamp .3s ease-out; }
 .stamp.ok { color: var(--ok); } .stamp.bad { color: var(--bad); }
-.err { background: #FFE3E6; border: 2px solid var(--bad); border-radius: 14px; padding: 14px 16px; }
+.err { background: var(--bad-soft); border: 2px solid var(--bad); border-radius: 14px; padding: 14px 16px; }
 .err b { color: var(--bad); }
 .work { display: flex; align-items: center; gap: 12px; color: var(--muted); }
 .spin { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--paper-2); border-top-color: var(--ink); animation: spin .7s linear infinite; }
 .log { display: grid; gap: 6px; font: 400 0.78rem/1.5 var(--font-mono); }
 .log div { display: grid; grid-template-columns: auto auto 1fr; gap: 10px; align-items: baseline; }
-.log time { color: var(--muted); }
-.log i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
-.toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px); background: var(--ink); color: var(--haldi); padding: 10px 18px; border-radius: 99px; font: 500 0.8rem var(--font-mono); opacity: 0; transition: .2s; pointer-events: none; z-index: 20; }
+.log time { color: var(--muted); } .log i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.inbox { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 16px; align-items: start; }
+.list { display: grid; gap: 8px; }
+.row { text-align: left; width: 100%; display: grid; gap: 4px; border: 2px solid var(--ink); background: var(--white); border-radius: 16px; padding: 10px 14px; }
+.row[aria-selected="true"] { background: var(--haldi); }
+.row .top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row .top b { margin-right: auto; }
+.row small { color: var(--muted); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row[aria-selected="true"] small { color: var(--ink); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c); border: 2px solid var(--ink); }
+.empty { color: var(--muted); padding: 10px 0; }
+.sec { display: grid; gap: 12px; }
+.sec p.hint { color: var(--muted); font-size: 0.88rem; }
+.item { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; border: 2px solid var(--ink); border-radius: 14px; padding: 10px 14px; }
+.item .grow { flex: 1; min-width: 160px; }
+.item b { display: block; line-height: 1.2; } .item small { color: var(--muted); font: 400 0.76rem var(--font-mono); word-break: break-all; }
+.form { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; align-items: end; }
+.form label { display: grid; gap: 4px; font-size: 0.8rem; font-weight: 700; }
+.form .full { grid-column: 1 / -1; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 0.92rem; }
+.check input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--ink); flex: none; }
+pre.code { margin: 0; background: var(--ink); color: #DCD8F5; border-radius: 14px; padding: 14px 16px; overflow-x: auto; font: 400 0.78rem/1.6 var(--font-mono); }
+dialog { border: 2px solid var(--ink); border-radius: 22px; padding: 24px; width: min(560px, calc(100vw - 32px)); box-shadow: 8px 8px 0 var(--ink); background: var(--white); color: var(--ink); }
+dialog::backdrop { background: rgba(23,18,58,.55); }
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px); background: var(--ink); color: var(--haldi); padding: 10px 18px; border-radius: 99px; font: 500 0.8rem var(--font-mono); opacity: 0; transition: .2s; pointer-events: none; z-index: 20; max-width: calc(100vw - 32px); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes stamp { from { transform: rotate(-6deg) scale(1.5); opacity: 0; } }
+@media (max-width: 960px) { .inbox { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 900px) {
   .app { grid-template-columns: minmax(0, 1fr); }
   .side { position: static; max-height: none; }
   .facts div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .draft-meta { padding-right: 0; padding-top: 22px; }
 }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="side">
-    <div class="brand"><i></i>inheriq<small>Workspace</small></div>
+    <div class="brand"><i></i>inheriq</div>
     <details class="mem" open>
-      <summary><span class="lbl">Company memory (shared by all agents)</span></summary>
+      <summary><span class="lbl">Company memory (all agents read this)</span></summary>
       <textarea id="memory" aria-label="Company memory"></textarea>
     </details>
     <div id="groups"></div>
-    <button class="btn" id="runAll" type="button">Run all agents</button>
+    <div class="group"><button class="btn" id="newAgentBtn" type="button">+ New agent</button><button class="btn" id="runAll" type="button">Run all agents</button></div>
+    <div class="foot">Open source, AGPL-3.0.<br><a href="https://github.com/0xmyst3ry/inheriq-app" target="_blank" rel="noopener">github.com/0xmyst3ry/inheriq-app</a></div>
   </aside>
   <main class="main">
     <div class="bar">
-      <span class="chip" id="status"><i></i>Checking model</span>
-      <span class="chip dark">Sandbox: sends are simulated</span>
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <button class="chip warn" id="status" type="button"><i></i>Checking</button>
     </div>
-    <details class="conn" id="conn">
-      <summary>Model connection</summary>
-      <div class="row"><input id="gKey" type="password" placeholder="Groq API key" autocomplete="off" aria-label="Groq API key"><input id="gModel" type="text" placeholder="Model name" aria-label="Model name"><button class="btn primary" id="saveG" type="button">Save</button></div>
-      <p>Saved on this computer only, in a local .env file. Never sent anywhere except to the model provider.</p>
-      <details style="margin-top:10px"><summary style="font-weight:600">Add a backup provider (any OpenAI-compatible API)</summary>
-        <div class="row"><input id="aBase" type="text" placeholder="Base URL, e.g. https://api.example.com/v1" aria-label="Backup base URL"><input id="aModel" type="text" placeholder="Model name" aria-label="Backup model"><input id="aKey" type="password" placeholder="API key" autocomplete="off" aria-label="Backup API key"><button class="btn primary" id="saveA" type="button">Save</button></div>
-      </details>
-    </details>
     <section id="view"></section>
-    <section class="card" aria-label="Audit trail"><span class="lbl" style="color:var(--muted)">Audit trail</span><div class="log" id="log"><div><time></time><i></i><span style="color:var(--muted)">Nothing yet. Run an agent.</span></div></div></section>
+    <section class="card" aria-label="Audit trail"><span class="lbl">Audit trail</span><div class="log" id="log"></div></section>
   </main>
 </div>
+
+<dialog id="agentDlg">
+  <form id="agentForm" method="dialog" style="display:grid;gap:12px">
+    <h2 style="font:800 1.6rem/1 var(--font-display);font-variation-settings:'wdth' 85;margin:0">New agent</h2>
+    <div class="form">
+      <label>Name<input type="text" id="na-name" maxlength="30" placeholder="Zara"></label>
+      <label>Role<input type="text" id="na-role" maxlength="40" placeholder="Booking AI"></label>
+      <label class="full">One-line description<input type="text" id="na-tag" maxlength="120" placeholder="Confirms and reschedules appointments"></label>
+      <label class="full">Instructions (what it does, what to output, when a person must approve)<textarea id="na-prompt" rows="6" maxlength="4000" placeholder="You are Zara, the Booking AI. Read the customer message, find the requested time, and draft a short confirmation. Changes to bookings within 24 hours need approval."></textarea></label>
+      <label class="full">Approval rule shown to users<input type="text" id="na-rule" maxlength="200" placeholder="Changes within 24 hours wait for your OK"></label>
+      <label class="full">Sample input<textarea id="na-sample" rows="3" maxlength="2000" placeholder="Hi, can I move my appointment from Tuesday to Thursday afternoon?"></textarea></label>
+      <label class="check full"><input type="checkbox" id="na-force"><span>Always wait for my OK before anything is sent</span></label>
+    </div>
+    <div class="actions"><span class="sp"></span><button class="btn" type="button" id="na-cancel">Cancel</button><button class="btn go" type="submit" id="na-save">Create agent</button></div>
+  </form>
+</dialog>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
 (function () {
   var $ = function (s, r) { return (r || document).querySelector(s); };
-  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
-  var now = function () { return new Date().toLocaleTimeString('en-GB', { hour12: false }); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var hms = function (iso) { return new Date(iso).toLocaleTimeString('en-GB', { hour12: false }); };
   var HDR = { 'Content-Type': 'application/json', 'X-Inheriq': '1' };
-  var MEM0 = 'Company: Acme Dynamics (B2B software). Tone: warm, concise, plain English.\nPlans: Starter $59/month, Growth $179/month, Enterprise custom. Annual plans save 15%.\nRefunds: up to $50 are approved automatically. Above $50 needs the support manager. Returns accepted within 30 days.\nInvoices above $2,000 need the finance lead\'s sign-off. Payment terms: net 30.\nSales: deals above $15k need the sales lead\'s OK. The AI never offers discounts beyond 15%.\nHours: Mon to Fri, 9 AM to 6 PM. Reply in the customer\'s language.';
-  var S = { agents: [], sel: null, R: {}, memory: MEM0, health: null, running: false, stop: false, log: [] };
+  var PRESETS = [
+    ['Groq', 'https://api.groq.com/openai/v1', 'e.g. llama-3.3-70b-versatile'], ['OpenAI', 'https://api.openai.com/v1', 'e.g. gpt-4o-mini'],
+    ['OpenRouter', 'https://openrouter.ai/api/v1', 'e.g. meta-llama/llama-3.3-70b-instruct'], ['Together', 'https://api.together.xyz/v1', 'model name from Together'],
+    ['Ollama (local, free)', 'http://localhost:11434/v1', 'e.g. llama3.1'], ['LM Studio (local)', 'http://localhost:1234/v1', 'the loaded model name'], ['Custom', '', 'model name']
+  ];
+  var S = { agents: [], sel: null, tab: 'agents', set: null, tasks: [], last: {}, running: {}, inputs: {}, err: {}, open: null, filter: 'all', memory: '', batch: false, stop: false, newToken: '' };
   var toastT;
-  function toast(t) { var el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove('show'); }, 2200); }
-  function ag(id) { return S.agents.find(function (a) { return a.id === id; }); }
-  function res(id) { return S.R[id] || (S.R[id] = { status: 'idle', input: null }); }
-  function post(path, body) { return fetch(path, { method: 'POST', headers: HDR, body: JSON.stringify(body) }).then(function (r) { return r.json(); }); }
-  function addLog(a, html) { S.log.unshift({ t: now(), c: a.color, h: html }); renderLog(); }
+  function toast(t) { var el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove('show'); }, 2600); }
+  function post(path, body) { return fetch(path, { method: 'POST', headers: HDR, body: JSON.stringify(body || {}) }).then(function (r) { return r.json(); }); }
+  function get(path) { return fetch(path).then(function (r) { return r.json(); }); }
+  var ag = function (id) { return S.agents.find(function (a) { return a.id === id; }); };
+  var task = function (id) { return S.tasks.find(function (t) { return t.id === id; }); };
+  function upsert(t) { var i = S.tasks.findIndex(function (x) { return x.id === t.id; }); if (i > -1) S.tasks[i] = t; else S.tasks.unshift(t); }
+  var pendingCount = function () { return S.tasks.filter(function (t) { return t.status === 'pending'; }).length; };
 
-  function renderLog() {
-    if (!S.log.length) return;
-    $('#log').innerHTML = S.log.slice(0, 8).map(function (l) { return '<div><time>' + l.t + '</time><i style="--c:' + l.c + '"></i><span>' + l.h + '</span></div>'; }).join('');
+  /* ---------- chrome ---------- */
+  function renderTabs() {
+    var n = pendingCount();
+    $('#tabs').innerHTML = [['agents', 'Agents'], ['inbox', 'Inbox'], ['connect', 'Connections']].map(function (t) {
+      return '<button class="tab" role="tab" type="button" data-tab="' + t[0] + '" aria-selected="' + (S.tab === t[0]) + '">' + t[1] + (t[0] === 'inbox' && n ? '<em>' + n + '</em>' : '') + '</button>';
+    }).join('');
   }
   function renderStatus() {
-    var h = S.health, el = $('#status');
-    if (h && h.ready) { el.className = 'chip ok'; el.innerHTML = '<i></i>Live · ' + esc(h.providers.map(function (p) { return p.name + ' ' + p.model; }).join(' + ')); }
-    else { el.className = 'chip warn'; el.innerHTML = '<i></i>No model key yet'; }
-    $('#conn').open = !(h && h.ready);
-    $('#gModel').placeholder = 'Model name (now: ' + (h ? h.model : '') + ')';
+    var el = $('#status'), p = S.set && S.set.providers;
+    if (p && p.length) { el.className = 'chip ok'; el.innerHTML = '<i></i>Live · ' + esc(p[0].name) + ' ' + esc(p[0].model) + (p.length > 1 ? ' +' + (p.length - 1) + ' backup' : ''); }
+    else { el.className = 'chip warn'; el.innerHTML = '<i></i>No model connected. Add one'; }
+  }
+  function agentState(id) {
+    if (S.running[id]) return 'running';
+    var t = task(S.last[id]); if (!t) return '';
+    return t.status === 'error' ? 'error' : t.status === 'pending' ? 'wait' : 'done';
   }
   function renderSide() {
     var groups = {};
     S.agents.forEach(function (a) { (groups[a.group] = groups[a.group] || []).push(a); });
     $('#groups').innerHTML = Object.keys(groups).map(function (g) {
       return '<div class="group"><span class="lbl">' + esc(g) + '</span>' + groups[g].map(function (a) {
-        return '<button class="agent" type="button" data-id="' + a.id + '" aria-selected="' + (a.id === S.sel) + '" style="--c:' + a.color + ';--on:' + a.on + '"><span class="av">' + a.name[0] + '</span><span><b>' + esc(a.name) + '</b><small>' + esc(a.role) + '</small></span><span class="st ' + res(a.id).status + '"></span></button>';
+        return '<button class="agent" type="button" data-id="' + a.id + '" aria-selected="' + (a.id === S.sel && S.tab === 'agents') + '" style="--c:' + a.color + ';--on:' + a.on + '"><span class="av">' + esc(a.name[0]) + '</span><span><b>' + esc(a.name) + '</b><small>' + esc(a.role) + '</small></span><span class="st ' + agentState(a.id) + '"></span></button>';
       }).join('') + '</div>';
     }).join('');
   }
-  function renderView() {
-    var a = ag(S.sel); if (!a) return;
-    var R = res(a.id), input = R.input == null ? a.sample : R.input, out = '';
-    if (R.status === 'running') out = '<div class="card"><div class="work"><span class="spin"></span>' + esc(a.name) + ' is working…</div></div>';
-    else if (R.status === 'error') out = '<div class="card"><div class="err"><b>' + esc(R.err.error || 'Something went wrong') + '</b>' + (R.err.hint ? '<p>' + esc(R.err.hint) + '</p>' : '') + '</div></div>';
-    else if (R.status === 'done') out = renderOut(a, R);
-    $('#view').innerHTML =
-      '<div class="head" style="--c:' + a.color + ';--on:' + a.on + '"><span class="av">' + a.name[0] + '</span><div><h1>' + esc(a.name) + '</h1><p>' + esc(a.role) + ' · ' + esc(a.tagline) + '</p></div><span class="chip warn">Rule: ' + esc(a.rule) + '</span></div>' +
-      '<div class="card"><span class="lbl" style="color:var(--muted)">Input (edit it or paste your own)</span><textarea id="input" aria-label="Input">' + esc(input) + '</textarea>' +
-      '<div class="actions"><button class="btn go" id="run" type="button"' + (R.status === 'running' ? ' disabled' : '') + '>Run ' + esc(a.name) + '</button><button class="btn" id="reset" type="button">Reset sample</button><span class="sp"></span><span class="kbd">Cmd or Ctrl + Enter to run</span></div></div>' + out;
+  function renderLog() {
+    var evs = [];
+    S.tasks.slice(0, 25).forEach(function (t) { t.events.forEach(function (e) { evs.push({ t: e.t, text: e.text, who: e.who, c: t.color, name: t.agentName }); }); });
+    evs.sort(function (a, b) { return a.t < b.t ? 1 : -1; });
+    $('#log').innerHTML = evs.length ? evs.slice(0, 10).map(function (e) {
+      return '<div><time>' + hms(e.t) + '</time><i style="--c:' + e.c + '"></i><span>' + (e.who === 'you' ? '<b>You</b>' : '<b>' + esc(e.name) + '</b>') + ' · ' + esc(e.text) + '</span></div>';
+    }).join('') : '<div><time></time><i style="--c:#ccc"></i><span style="color:var(--muted)">Nothing yet. Run an agent. Every run and every decision is recorded here and saved on disk.</span></div>';
   }
-  function renderOut(a, R) {
-    var d = R.res.data, dec = R.decision, chips = '<span class="chip">' + (R.res.ms / 1000).toFixed(1) + 's</span><span class="chip">' + esc(R.res.provider) + ' · ' + esc(R.res.model) + '</span>' + (R.res.cached ? '<span class="chip warn">Cached result from an earlier run</span>' : '');
-    var gate = d.needs_approval
-      ? '<div class="gate warn"><b>Needs your OK</b><span>' + esc(d.approval_reason || a.rule) + '</span></div>'
-      : '<div class="gate ok"><b>Inside your rules</b><span>' + esc(d.approval_reason || 'Safe to send alone.') + '</span></div>';
+
+  /* ---------- task output ---------- */
+  function actionLine(t) {
+    if (!t.action) return '';
+    var a = t.action;
+    if (!a.ok) return '<div class="gate bad"><b>Not delivered</b><span>' + esc(a.detail) + ' <button class="btn sm" data-act="retry" data-id="' + t.id + '" type="button">Retry</button></span></div>';
+    if (a.via === 'none') return '<div class="gate warn"><b>Nothing sent</b><span>' + esc(a.detail) + ' Connect a destination under Connections to deliver approved drafts.</span></div>';
+    return '<div class="gate ok"><b>Delivered</b><span>' + esc(a.detail) + '</span></div>';
+  }
+  function renderTask(t, withInput) {
+    if (t.status === 'error') return '<div class="card"><div class="err"><b>' + esc(t.error.error || 'Something went wrong') + '</b>' + (t.error.hint ? '<p>' + esc(t.error.hint) + '</p>' : '') + '</div></div>';
+    var r = t.result, d = r.data, st = t.status, stamp = '';
+    var chips = '<span class="chip">' + (r.ms / 1000).toFixed(1) + 's</span><span class="chip">' + esc(r.provider) + ' · ' + esc(r.model) + '</span>' + (r.cached ? '<span class="chip warn">Cached from an earlier run</span>' : '') + (t.source === 'api' ? '<span class="chip dark">via API</span>' : '');
+    var gate = d.needs_approval ? '<div class="gate warn"><b>Needs your OK</b><span>' + esc(d.approval_reason || 'A person must approve this.') + '</span></div>' : '<div class="gate ok"><b>Inside your rules</b><span>' + esc(d.approval_reason || 'Safe to send alone.') + '</span></div>';
     var facts = d.facts.length ? '<dl class="facts">' + d.facts.map(function (f) { return '<div><dt>' + esc(f.label) + '</dt><dd>' + esc(f.value) + '</dd></div>'; }).join('') + '</dl>' : '';
     var steps = d.steps.length ? '<ol class="steps">' + d.steps.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' : '';
     var draft = '';
     if (d.draft) {
-      var cls = dec === 'approved' || dec === 'auto' ? 'sent' : dec === 'rejected' ? 'rejected' : '';
-      var stamp = dec === 'approved' ? '<div class="stamp ok">Approved · ' + R.at + ' · simulated send</div>' : dec === 'auto' ? '<div class="stamp ok">Sent alone · ' + R.at + ' · simulated</div>' : dec === 'rejected' ? '<div class="stamp bad">Rejected · ' + R.at + '</div>' : '';
-      var btns = !dec && d.needs_approval ? '<div class="actions"><button class="btn ok" id="approve" type="button">Approve and send</button><button class="btn" id="edit" type="button">Edit draft</button><button class="btn" id="reject" type="button">Reject</button></div>' : (dec ? '<div class="actions"><button class="btn" id="undo" type="button">Undo</button></div>' : '');
-      draft = '<div class="draft ' + cls + '">' + stamp + '<div class="draft-meta">' + esc(d.draft.channel) + (d.draft.to ? ' → ' + esc(d.draft.to) : '') + (d.draft.subject ? ' · Subject: ' + esc(d.draft.subject) : '') + '</div><div class="body" id="draftBody">' + esc(d.draft.body) + '</div>' + btns + '</div>';
+      if (st === 'approved') stamp = '<div class="stamp ok">Approved</div>'; else if (st === 'auto') stamp = '<div class="stamp ok">Sent alone</div>'; else if (st === 'rejected') stamp = '<div class="stamp bad">Rejected</div>';
+      var btns = st === 'pending' ? '<div class="actions"><button class="btn ok" data-act="approve" data-id="' + t.id + '" type="button">' + (d.needs_approval ? 'Approve and send' : 'Send') + '</button><button class="btn" data-act="edit" type="button">Edit draft</button><button class="btn danger" data-act="reject" data-id="' + t.id + '" type="button">Reject</button></div>' : '';
+      draft = '<div class="draft ' + st + '">' + stamp + '<div class="draft-meta">' + esc(d.draft.channel) + (d.draft.to ? ' → ' + esc(d.draft.to) : '') + (d.draft.subject ? ' · Subject: ' + esc(d.draft.subject) : '') + (t.replyTo ? ' · reply to ' + esc(t.replyTo) : '') + '</div><div class="body" data-body="' + t.id + '">' + esc(d.draft.body) + '</div>' + btns + '</div>';
     }
-    return '<div class="card out"><div class="out-top"><h3>' + esc(d.headline) + '</h3><div class="chips">' + chips + '</div></div>' + gate + facts + steps + draft + '</div>';
+    var inp = withInput ? '<div><span class="lbl">Input</span><p style="white-space:pre-wrap;color:var(--muted);margin-top:4px">' + esc(t.input) + '</p></div>' : '';
+    return '<div class="card out"><div class="out-top"><h3>' + esc(d.headline) + '</h3><div class="chips">' + chips + '</div></div>' + inp + gate + facts + steps + draft + actionLine(t) + '</div>';
   }
 
+  /* ---------- views ---------- */
+  function routeSelect(a) {
+    var cur = (S.set.routes || {})[a.id] || '';
+    var def = S.set.integrations.find(function (i) { return i.id === S.set.defaultRoute; });
+    var opts = '<option value=""' + (cur === '' ? ' selected' : '') + '>Default (' + esc(def ? def.name : 'nowhere') + ')</option><option value="none"' + (cur === 'none' ? ' selected' : '') + '>Nowhere, log only</option>' +
+      S.set.integrations.map(function (i) { return '<option value="' + i.id + '"' + (cur === i.id ? ' selected' : '') + '>' + esc(i.name) + '</option>'; }).join('');
+    return '<label class="route">Send approved drafts to <select data-route="' + a.id + '" aria-label="Destination for ' + esc(a.name) + '">' + opts + '</select></label>';
+  }
+  function viewAgents() {
+    var a = ag(S.sel); if (!a) return '';
+    var input = S.inputs[a.id] == null ? a.sample : S.inputs[a.id], out = '';
+    if (S.running[a.id]) out = '<div class="card"><div class="work"><span class="spin"></span>' + esc(a.name) + ' is working…</div></div>';
+    else if (S.err[a.id]) out = '<div class="card"><div class="err"><b>' + esc(S.err[a.id]) + '</b></div></div>';
+    else if (S.last[a.id] && task(S.last[a.id])) out = renderTask(task(S.last[a.id]), false);
+    return '<div class="head" style="--c:' + a.color + ';--on:' + a.on + '"><span class="av">' + esc(a.name[0]) + '</span><div><h1>' + esc(a.name) + '</h1><p>' + esc(a.role) + ' · ' + esc(a.tagline) + '</p></div>' +
+      '<div class="sp"><span class="chip warn">Rule: ' + esc(a.rule) + '</span>' + routeSelect(a) + (a.custom ? '<button class="btn sm danger" data-act="delAgent" type="button">Delete this agent</button>' : '') + '</div></div>' +
+      '<div class="card" style="margin-top:20px"><span class="lbl">Input (edit it or paste your own)</span><textarea class="big" id="input" aria-label="Input">' + esc(input) + '</textarea>' +
+      '<div class="actions"><button class="btn go" data-act="run" type="button"' + (S.running[a.id] ? ' disabled' : '') + '>Run ' + esc(a.name) + '</button><button class="btn" data-act="reset" type="button">Reset sample</button><span class="sp"></span><span class="kbd">Cmd or Ctrl + Enter to run</span></div></div>' +
+      '<div style="margin-top:20px;display:grid;gap:20px">' + out + '</div>';
+  }
+  function viewInbox() {
+    var list = S.tasks.filter(function (t) { return S.filter === 'all' || (S.filter === 'pending' && t.status === 'pending') || (S.filter === 'api' && t.source === 'api'); });
+    var open = S.open && task(S.open);
+    var chipFor = function (t) { var m = { pending: ['warn', 'Needs you'], approved: ['ok', 'Approved'], rejected: ['bad', 'Rejected'], auto: ['ok', 'Sent alone'], info: ['', 'Done'], error: ['bad', 'Error'] }[t.status]; return '<span class="chip ' + m[0] + '">' + m[1] + '</span>'; };
+    var rows = list.length ? list.map(function (t) {
+      return '<button class="row" type="button" data-open="' + t.id + '" aria-selected="' + (S.open === t.id) + '" style="--c:' + t.color + '"><span class="top"><span class="dot"></span><b>' + esc(t.agentName) + '</b>' + (t.source === 'api' ? '<span class="chip dark">API</span>' : '') + chipFor(t) + '</span><small>' + hms(t.at) + ' · ' + esc(t.input.replace(/\s+/g, ' ')) + '</small></button>';
+    }).join('') : '<p class="empty">Nothing here yet. Run an agent, or send work in through the API.</p>';
+    var f = function (k, l) { return '<button class="tab" type="button" data-filter="' + k + '" aria-selected="' + (S.filter === k) + '">' + l + '</button>'; };
+    return '<div class="sec"><h2>Inbox</h2><p class="hint">Every run lands here, including work that arrives through the API. Drafts that need approval wait until you decide.</p><div class="tabs">' + f('all', 'All') + f('pending', 'Needs you') + f('api', 'From API') + '</div></div>' +
+      '<div class="inbox" style="margin-top:16px"><div class="list">' + rows + '</div><div>' + (open ? renderTask(open, true) : '<div class="card"><p class="empty">Select an item to review it.</p></div>') + '</div></div>';
+  }
+  function viewConnect() {
+    var s = S.set, preset = S.preset == null ? 0 : S.preset, ptype = S.itype || 'webhook';
+    var provs = s.providers.length ? s.providers.map(function (p, i) {
+      return '<div class="item"><div class="grow"><b>' + esc(p.name) + (i === 0 ? ' <span class="chip ok">Primary</span>' : ' <span class="chip">Backup</span>') + '</b><small>' + esc(p.model) + ' · ' + esc(p.base) + ' · key ' + (p.hasKey ? 'saved' : 'not set') + '</small></div>' +
+        '<span class="chip" id="ptest-' + p.id + '"></span><button class="btn sm" data-act="ptest" data-id="' + p.id + '" type="button">Test</button>' + (i > 0 ? '<button class="btn sm" data-act="pprimary" data-id="' + p.id + '" type="button">Make primary</button>' : '') + '<button class="btn sm danger" data-act="pdel" data-id="' + p.id + '" type="button">Remove</button></div>';
+    }).join('') : '<p class="empty">No model yet. Add one below. The first model is used first, and the others are backups if it fails.</p>';
+    var T = s.types.find(function (x) { return x.id === ptype; });
+    var ints = s.integrations.length ? s.integrations.map(function (i) {
+      return '<div class="item"><div class="grow"><b>' + esc(i.name) + '</b><small>' + esc(i.type) + ' · ' + esc(i.target) + '</small></div><span class="chip" id="itest-' + i.id + '"></span><button class="btn sm" data-act="itest" data-id="' + i.id + '" type="button">Send test</button><button class="btn sm danger" data-act="idel" data-id="' + i.id + '" type="button">Remove</button></div>';
+    }).join('') : '<p class="empty">No destinations yet. Without one, approving a draft only records the decision.</p>';
+    var tokenBox = S.newToken ? '<div class="gate warn"><b>Your token</b><span style="word-break:break-all"><code>' + esc(S.newToken) + '</code><br>Copy it now. It is stored on this computer and only a masked state is shown later.</span></div>' : '';
+    var base = location.origin;
+    return '<div class="sec"><h2>Connections</h2><p class="hint">Everything here stays on this computer. Keys are saved in the data folder and are never shown again.</p></div>' +
+      '<div class="card sec" style="margin-top:16px"><h2>1. Model</h2><p class="hint">Any OpenAI-compatible API works: hosted, or local with Ollama or LM Studio. Check your provider for the exact model name.</p>' + provs +
+      '<div class="form"><label>Provider<select id="pPreset">' + PRESETS.map(function (p, i) { return '<option value="' + i + '"' + (i === preset ? ' selected' : '') + '>' + esc(p[0]) + '</option>'; }).join('') + '</select></label>' +
+      '<label>Base URL<input type="text" id="pBase" value="' + esc(PRESETS[preset][1]) + '" placeholder="https://api.example.com/v1"></label>' +
+      '<label>Model<input type="text" id="pModel" placeholder="' + esc(PRESETS[preset][2]) + '"></label><label>API key<input type="password" id="pKey" placeholder="Leave empty for local models" autocomplete="off"></label>' +
+      '<button class="btn primary" data-act="padd" type="button">Add model</button></div></div>' +
+      '<div class="card sec" style="margin-top:20px"><h2>2. Where approved drafts go</h2><p class="hint">When you approve a draft, Inheriq sends it here. For WhatsApp, email, a CRM or anything else, use a generic webhook into n8n, Zapier, Make or your own API.</p>' + ints +
+      '<div class="form"><label>Type<select id="iType">' + s.types.map(function (t) { return '<option value="' + t.id + '"' + (t.id === ptype ? ' selected' : '') + '>' + esc(t.label) + '</option>'; }).join('') + '</select></label>' +
+      '<label>Name<input type="text" id="iName" placeholder="Team Slack"></label>' +
+      (T.fields.indexOf('url') > -1 ? '<label>URL<input type="text" id="iUrl" placeholder="https://hooks.example.com/…"></label>' : '') +
+      (T.fields.indexOf('token') > -1 ? '<label>' + (ptype === 'telegram' ? 'Bot token' : 'Bearer token (optional)') + '<input type="password" id="iToken" autocomplete="off"></label>' : '') +
+      (T.fields.indexOf('chatId') > -1 ? '<label>Chat id<input type="text" id="iChat" placeholder="123456789"></label>' : '') +
+      '<button class="btn primary" data-act="iadd" type="button">Add destination</button></div>' +
+      '<div class="form"><label>Default destination<select id="defRoute"><option value="">Nowhere, log only</option>' + s.integrations.map(function (i) { return '<option value="' + i.id + '"' + (s.defaultRoute === i.id ? ' selected' : '') + '>' + esc(i.name) + '</option>'; }).join('') + '</select></label></div>' +
+      '<label class="check"><input type="checkbox" id="autoSend"' + (s.autoSend ? ' checked' : '') + '><span>Send drafts that are inside the rules without asking me. Off by default. Anything that needs approval always waits.</span></label></div>' +
+      '<div class="card sec" style="margin-top:20px"><h2>3. API access</h2><p class="hint">Let other tools hand work to an agent: a website form, n8n, Zapier, a WhatsApp provider. Results land in your Inbox for approval.</p>' +
+      '<div class="actions"><span class="chip ' + (s.api.enabled ? 'ok' : 'warn') + '">' + (s.api.enabled ? 'On' : 'Off') + '</span>' + (s.api.fromEnv ? '<span class="kbd">Token set by INHERIQ_API_TOKEN</span>' : '<button class="btn sm" data-act="token" type="button">' + (s.api.enabled ? 'Generate a new token' : 'Generate a token') + '</button>') + '</div>' + tokenBox +
+      '<pre class="code">curl -X POST ' + esc(base) + '/api/inbound/' + esc(S.sel || 'arjun') + ' \\\n  -H "Authorization: Bearer YOUR_TOKEN" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"input": "Hi, can I get a refund for order 1234?", "replyTo": "+15551234567"}\'</pre>' +
+      '<p class="hint">The console stays local only. To call the API from outside this computer, expose just the /api/inbound path through a tunnel or reverse proxy. See the README.</p></div>';
+  }
+  function renderView() {
+    renderTabs(); renderSide(); renderStatus(); renderLog();
+    var v = $('#view'); if (!S.set) return;
+    v.innerHTML = S.tab === 'agents' ? viewAgents() : S.tab === 'inbox' ? viewInbox() : viewConnect();
+  }
+
+  /* ---------- actions ---------- */
   async function run(id) {
-    var a = ag(id), R = res(id);
-    if (R.input == null) R.input = a.sample;
-    R.status = 'running'; R.decision = null; renderSide(); if (S.sel === id) renderView();
+    var a = ag(id); S.running[id] = true; delete S.err[id]; renderView();
     try {
-      var out = await post('/api/run', { agent: id, input: R.input, memory: S.memory });
-      if (out.ok) {
-        R.status = 'done'; R.res = out;
-        var d = out.data;
-        if (d.draft && !d.needs_approval) { R.decision = 'auto'; R.at = now(); addLog(a, '<b>' + esc(a.name) + '</b> sent a message on its own, inside your rules (simulated).'); }
-        else if (d.draft) addLog(a, '<b>' + esc(a.name) + '</b> drafted a message and is waiting for your OK.');
-        else addLog(a, '<b>' + esc(a.name) + '</b> finished: ' + esc(d.headline));
-      } else { R.status = 'error'; R.err = out; }
-    } catch (e) { R.status = 'error'; R.err = { error: 'Could not reach the local server.', hint: 'Check that node server.js is still running in the terminal.' }; }
-    renderSide(); if (S.sel === id) renderView();
+      var t = await post('/api/run', { agent: id, input: S.inputs[id] == null ? a.sample : S.inputs[id], memory: S.memory });
+      if (t.id) { upsert(t); S.last[id] = t.id; } else S.err[id] = t.error || 'Something went wrong';
+    } catch (e) { S.err[id] = 'Could not reach the local server. Is node server.js still running?'; }
+    delete S.running[id]; renderView();
   }
   async function runAll() {
     var btn = $('#runAll');
-    if (S.running) { S.stop = true; btn.textContent = 'Stopping…'; return; }
-    S.running = true; S.stop = false; btn.textContent = 'Stop'; var t0 = Date.now(), ok = 0;
-    for (var i = 0; i < S.agents.length; i++) {
-      if (S.stop) break;
-      S.sel = S.agents[i].id; renderSide(); await run(S.sel); if (res(S.sel).status === 'done') ok++;
-    }
-    S.running = false; btn.textContent = 'Run all agents';
-    toast(ok + ' of ' + S.agents.length + ' agents finished in ' + Math.round((Date.now() - t0) / 1000) + 's');
+    if (S.batch) { S.stop = true; btn.textContent = 'Stopping…'; return; }
+    S.batch = true; S.stop = false; btn.textContent = 'Stop'; S.tab = 'agents'; var t0 = Date.now(), ok = 0;
+    for (var i = 0; i < S.agents.length; i++) { if (S.stop) break; S.sel = S.agents[i].id; renderView(); await run(S.sel); var t = task(S.last[S.sel]); if (t && t.status !== 'error') ok++; }
+    S.batch = false; btn.textContent = 'Run all agents'; toast(ok + ' of ' + S.agents.length + ' agents finished in ' + Math.round((Date.now() - t0) / 1000) + 's');
   }
+  async function decide(id, decision, el) {
+    var body = el ? el.textContent : undefined;
+    var t = await post('/api/tasks/' + id + '/decision', { decision: decision, body: body });
+    if (t.id) upsert(t); else toast(t.error || 'Could not save the decision'); renderView();
+  }
+  async function refreshSettings() { S.set = await get('/api/settings'); }
 
-  document.addEventListener('click', function (e) {
-    var t = e.target, a;
-    var ab = t.closest('.agent'); if (ab) { S.sel = ab.dataset.id; renderSide(); renderView(); return; }
-    if (t.closest('#run')) { run(S.sel); return; }
-    if (t.closest('#reset')) { res(S.sel).input = null; res(S.sel).status = 'idle'; renderView(); return; }
-    if (t.closest('#runAll')) { runAll(); return; }
-    a = ag(S.sel); var R = a && res(a.id);
-    if (t.closest('#edit')) {
-      var b = $('#draftBody'), on = b.getAttribute('contenteditable') === 'true';
-      if (on) { b.removeAttribute('contenteditable'); R.res.data.draft.body = b.textContent; $('#edit').textContent = 'Edit draft'; }
-      else { b.setAttribute('contenteditable', 'true'); b.focus(); $('#edit').textContent = 'Done editing'; }
-      return;
+  document.addEventListener('click', async function (e) {
+    var el = e.target, x;
+    if ((x = el.closest('[data-tab]'))) { S.tab = x.dataset.tab; if (S.tab === 'inbox') { try { S.tasks = await get('/api/tasks'); } catch (er) {} } renderView(); return; }
+    if ((x = el.closest('.agent'))) { S.sel = x.dataset.id; S.tab = 'agents'; renderView(); return; }
+    if ((x = el.closest('[data-filter]'))) { S.filter = x.dataset.filter; renderView(); return; }
+    if ((x = el.closest('[data-open]'))) { S.open = x.dataset.open; renderView(); return; }
+    if (el.closest('#status')) { S.tab = 'connect'; renderView(); return; }
+    if (el.closest('#runAll')) { runAll(); return; }
+    if (el.closest('#newAgentBtn')) { $('#agentDlg').showModal(); return; }
+    var b = el.closest('[data-act]'); if (!b) return;
+    var act = b.dataset.act, id = b.dataset.id;
+    if (act === 'run') return run(S.sel);
+    if (act === 'reset') { delete S.inputs[S.sel]; delete S.err[S.sel]; renderView(); return; }
+    if (act === 'edit') { var body = b.closest('.draft').querySelector('.body'), on = body.getAttribute('contenteditable') === 'true'; if (on) { body.removeAttribute('contenteditable'); b.textContent = 'Edit draft'; } else { body.setAttribute('contenteditable', 'true'); body.focus(); b.textContent = 'Done editing'; } return; }
+    if (act === 'approve') { var bd = b.closest('.draft').querySelector('.body'); b.disabled = true; return decide(id, 'approve', bd); }
+    if (act === 'reject') return decide(id, 'reject');
+    if (act === 'retry') { var t = await post('/api/tasks/' + id + '/retry'); if (t.id) upsert(t); else toast(t.error); renderView(); return; }
+    if (act === 'delAgent') {
+      if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = 'Click again to delete'; setTimeout(function () { b.dataset.sure = ''; b.textContent = 'Delete this agent'; }, 3000); return; }
+      await post('/api/agents/custom/delete', { id: S.sel }); S.agents = await get('/api/agents'); S.sel = S.agents[0].id; renderView(); return;
     }
-    if (t.closest('#approve')) {
-      var bb = $('#draftBody'); if (bb && bb.textContent !== R.res.data.draft.body) { R.res.data.draft.body = bb.textContent; R.edited = true; }
-      R.decision = 'approved'; R.at = now(); addLog(a, '<b>You</b> approved ' + esc(a.name) + '’s draft' + (R.edited ? ' with edits' : '') + '. Sent (simulated).'); renderView(); return;
+    if (act === 'ptest') {
+      var chip = $('#ptest-' + id); chip.className = 'chip'; chip.textContent = 'Testing…';
+      var r = await post('/api/providers/test', { id: id }); chip.className = 'chip ' + (r.ok ? 'ok' : 'bad'); chip.textContent = r.ok ? 'Works · ' + r.ms + ' ms' : (r.status === 401 ? 'Key rejected' : r.status === 404 ? 'Model not found' : 'Failed: ' + String(r.error).slice(0, 60)); return;
     }
-    if (t.closest('#reject')) { R.decision = 'rejected'; R.at = now(); addLog(a, '<b>You</b> rejected ' + esc(a.name) + '’s draft. Nothing was sent.'); renderView(); return; }
-    if (t.closest('#undo')) { R.decision = null; renderView(); return; }
+    if (act === 'pprimary') { S.set = await post('/api/providers/primary', { id: id }); renderView(); return; }
+    if (act === 'pdel') { S.set = await post('/api/providers/delete', { id: id }); renderView(); return; }
+    if (act === 'padd') {
+      var r2 = await post('/api/providers', { name: PRESETS[+$('#pPreset').value][0].replace(/ \(.*\)/, ''), base: $('#pBase').value, model: $('#pModel').value, key: $('#pKey').value });
+      if (r2.error) return toast(r2.error); S.set = r2; S.preset = 0; toast('Model added. Press Test to check it.'); renderView(); return;
+    }
+    if (act === 'itest') {
+      var c2 = $('#itest-' + id); c2.className = 'chip'; c2.textContent = 'Sending…';
+      var r3 = await post('/api/integrations/test', { id: id }); c2.className = 'chip ' + (r3.ok ? 'ok' : 'bad'); c2.textContent = r3.ok ? 'Delivered' : String(r3.detail).slice(0, 70); return;
+    }
+    if (act === 'idel') { S.set = await post('/api/integrations/delete', { id: id }); renderView(); return; }
+    if (act === 'iadd') {
+      var g = function (i) { var n = $(i); return n ? n.value : ''; };
+      var r4 = await post('/api/integrations', { type: g('#iType'), name: g('#iName'), url: g('#iUrl'), token: g('#iToken'), chatId: g('#iChat') });
+      if (r4.error) return toast(r4.error); S.set = r4; toast('Destination added. Press Send test.'); renderView(); return;
+    }
+    if (act === 'token') { var r5 = await post('/api/token'); S.newToken = r5.token; await refreshSettings(); renderView(); return; }
   });
-  document.addEventListener('input', function (e) { if (e.target.id === 'input') res(S.sel).input = e.target.value; if (e.target.id === 'memory') S.memory = e.target.value; });
+  document.addEventListener('change', async function (e) {
+    var el = e.target;
+    if (el.id === 'pPreset') { S.preset = +el.value; renderView(); return; }
+    if (el.id === 'iType') { S.itype = el.value; renderView(); return; }
+    if (el.id === 'defRoute') { S.set = await post('/api/routing', { defaultRoute: el.value }); renderView(); return; }
+    if (el.id === 'autoSend') { S.set = await post('/api/routing', { autoSend: el.checked }); toast(el.checked ? 'Auto-send on for drafts inside your rules' : 'Auto-send off'); return; }
+    if (el.dataset.route) { var routes = Object.assign({}, S.set.routes); if (el.value) routes[el.dataset.route] = el.value; else delete routes[el.dataset.route]; S.set = await post('/api/routing', { routes: routes }); return; }
+  });
+  var memT;
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'input') S.inputs[S.sel] = e.target.value;
+    if (e.target.id === 'memory') { S.memory = e.target.value; clearTimeout(memT); memT = setTimeout(function () { post('/api/memory', { memory: S.memory }); }, 600); }
+  });
   document.addEventListener('keydown', function (e) { if (e.target.id === 'input' && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); run(S.sel); } });
 
-  async function refreshHealth() { try { S.health = await (await fetch('/api/health')).json(); } catch (e) { S.health = null; } renderStatus(); }
-  $('#saveG').addEventListener('click', async function () {
-    var key = $('#gKey').value.trim(), model = $('#gModel').value.trim();
-    if (!key && !model) { toast('Paste a key first'); return; }
-    await post('/api/provider', { slot: 'groq', key: key, model: model }); $('#gKey').value = ''; await refreshHealth(); toast('Saved. Ready to run');
-  });
-  $('#saveA').addEventListener('click', async function () {
-    var base = $('#aBase').value.trim(), model = $('#aModel').value.trim(), key = $('#aKey').value.trim();
-    if (!base || !model || !key) { toast('Fill in all three fields'); return; }
-    await post('/api/provider', { slot: 'alt', base: base, model: model, key: key }); $('#aKey').value = ''; await refreshHealth(); toast('Backup provider saved');
+  $('#na-cancel').addEventListener('click', function () { $('#agentDlg').close(); });
+  $('#agentForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var r = await post('/api/agents/custom', { name: $('#na-name').value, role: $('#na-role').value, tagline: $('#na-tag').value, prompt: $('#na-prompt').value, rule: $('#na-rule').value, sample: $('#na-sample').value, force: $('#na-force').checked });
+    if (r.error) return toast(r.error);
+    S.agents.push(r); S.sel = r.id; S.tab = 'agents'; $('#agentDlg').close(); $('#agentForm').reset(); renderView(); toast(r.name + ' is ready. Press Run.');
   });
 
-  $('#memory').value = MEM0;
-  Promise.all([fetch('/api/agents').then(function (r) { return r.json(); }), refreshHealth()]).then(function (v) {
-    S.agents = v[0]; S.sel = S.agents[0].id; renderSide(); renderView();
-  });
+  Promise.all([get('/api/agents'), get('/api/settings'), get('/api/tasks')]).then(function (v) {
+    S.agents = v[0]; S.set = v[1]; S.tasks = v[2]; S.memory = v[1].memory; $('#memory').value = S.memory; S.sel = S.agents[0].id;
+    if (!S.set.providers.length) S.tab = 'connect';
+    renderView();
+  }).catch(function () { $('#view').innerHTML = '<div class="card"><div class="err"><b>Could not reach the Inheriq server.</b><p>Start it with: node server.js</p></div></div>'; });
 })();
 </script>
 </body>

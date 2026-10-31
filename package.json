@@ -1,0 +1,14 @@
+{
+  "name": "inheriq",
+  "version": "0.1.0",
+  "description": "Open-source AI employees that work with your own model, your own endpoints and your own tools, with a human approving what matters.",
+  "license": "AGPL-3.0-only",
+  "author": "Shubham Shakti",
+  "repository": { "type": "git", "url": "git+https://github.com/0xmyst3ry/inheriq-app.git" },
+  "private": false,
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  }
+}

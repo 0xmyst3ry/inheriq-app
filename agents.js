@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-only
 // Every agent is configuration: a role prompt, a sample input and an approval rule.
 // The engine in server.js is shared, so adding an agent means adding one entry here.
 module.exports = [
