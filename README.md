@@ -11,8 +11,8 @@ No accounts. No database. No dependencies. Node 18 or newer is all you need.
 ## Quick start
 
 ```bash
-git clone https://github.com/0xmyst3ry/inheriq-app.git
-cd inheriq-app
+git clone https://github.com/0xmyst3ry/agents-bundle.git
+cd agents-bundle
 node server.js
 ```
 

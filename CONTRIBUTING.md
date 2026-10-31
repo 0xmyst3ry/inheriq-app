@@ -3,8 +3,8 @@
 Thanks for helping. The project is small on purpose: Node 18 or newer, no dependencies, no build step.
 
 ```bash
-git clone https://github.com/0xmyst3ry/inheriq-app.git
-cd inheriq-app
+git clone https://github.com/0xmyst3ry/agents-bundle.git
+cd agents-bundle
 npm test        # 10 tests, no network needed
 npm start       # http://localhost:3000
 ```

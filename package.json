@@ -4,7 +4,7 @@
   "description": "Open-source AI employees that work with your own model, your own endpoints and your own tools, with a human approving what matters.",
   "license": "AGPL-3.0-only",
   "author": "Shubham Shakti",
-  "repository": { "type": "git", "url": "git+https://github.com/0xmyst3ry/inheriq-app.git" },
+  "repository": { "type": "git", "url": "git+https://github.com/0xmyst3ry/agents-bundle.git" },
   "private": false,
   "engines": { "node": ">=18" },
   "scripts": {
