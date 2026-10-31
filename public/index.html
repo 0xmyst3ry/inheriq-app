@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inheriq Workspace</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400..700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --ink: #17123A; --ink-2: #2A2457; --haldi: #FFC629; --paper: #F3F0FF; --paper-2: #E4DEFA; --white: #fff;
+  --muted: #5B5680; --muted-on-ink: #B9B3DE; --ok: #0F8F4E; --ok-soft: #D5F3E1; --warn: #8F5600; --warn-soft: #FFE9B8; --bad: #D12B3B;
+  --font-display: "Archivo", "Arial Narrow", Impact, sans-serif;
+  --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-body); line-height: 1.5; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+h1, h2, h3, p, ul, ol, dl { margin: 0; padding: 0; }
+:focus-visible { outline: 3px solid #8466FF; outline-offset: 2px; }
+.app { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: 100vh; }
+
+/* Sidebar */
+.side { background: var(--ink); color: var(--white); padding: 20px 16px; display: flex; flex-direction: column; gap: 18px; max-height: 100vh; overflow-y: auto; position: sticky; top: 0; }
+.brand { font: 800 1.6rem/1 var(--font-display); font-variation-settings: "wdth" 90; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+.brand i { width: 14px; height: 14px; border-radius: 50%; background: var(--haldi); box-shadow: 10px 0 0 -2px #FF6A3D inset; }
+.brand small { font: 500 0.66rem/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-on-ink); margin-left: auto; }
+.lbl { font: 500 0.68rem/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-on-ink); }
+details.mem summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+details.mem summary::-webkit-details-marker { display: none; }
+details.mem textarea { margin-top: 10px; width: 100%; min-height: 190px; resize: vertical; background: var(--ink-2); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; color: var(--white); padding: 10px 12px; font: 400 0.8rem/1.5 var(--font-mono); }
+.group { display: grid; gap: 6px; }
+.agent { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; background: transparent; color: var(--white); padding: 8px 10px; border-radius: 12px; }
+.agent:hover { background: var(--ink-2); }
+.agent[aria-selected="true"] { background: var(--white); color: var(--ink); }
+.av { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font: 800 1rem/1 var(--font-display); background: var(--c); color: var(--on); flex: none; }
+.agent b { display: block; font-size: 0.92rem; line-height: 1.2; }
+.agent small { font-size: 0.74rem; opacity: 0.7; }
+.st { margin-left: auto; width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; opacity: 0.35; flex: none; }
+.st.running { opacity: 1; border-color: var(--haldi); border-top-color: transparent; animation: spin .7s linear infinite; }
+.st.done { opacity: 1; background: var(--ok); border-color: var(--ok); }
+.st.error { opacity: 1; background: var(--bad); border-color: var(--bad); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 20px; border: 2px solid var(--ink); border-radius: 99px; font-weight: 700; background: var(--white); }
+.btn:hover:not([disabled]) { background: var(--ink); color: var(--haldi); }
+.btn[disabled] { opacity: .5; cursor: wait; }
+.btn.primary { background: var(--haldi); }
+.btn.primary:hover:not([disabled]) { background: var(--ink); color: var(--haldi); }
+.btn.go { background: var(--ink); color: var(--haldi); }
+.btn.go:hover:not([disabled]) { background: var(--ink-2); }
+.btn.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
+.side .btn { border-color: var(--haldi); background: transparent; color: var(--haldi); width: 100%; }
+.side .btn:hover:not([disabled]) { background: var(--haldi); color: var(--ink); }
+
+/* Main */
+.main { padding: clamp(16px, 3vw, 36px); display: grid; gap: 20px; align-content: start; min-width: 0; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; justify-content: space-between; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 99px; font: 500 0.72rem/1.3 var(--font-mono); background: var(--paper-2); }
+.chip.ok { background: var(--ok-soft); color: var(--ok); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.dark { background: var(--ink); color: var(--white); }
+.chip i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.conn { background: var(--white); border: 2px solid var(--ink); border-radius: 18px; padding: 14px 18px; }
+.conn summary { cursor: pointer; font-weight: 700; }
+.conn .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; align-items: center; }
+.conn input { flex: 1 1 200px; min-height: 42px; padding: 0 14px; border: 2px solid var(--ink); border-radius: 12px; background: var(--paper); min-width: 0; }
+.conn p { font-size: 0.84rem; color: var(--muted); margin-top: 8px; }
+.head { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: center; }
+.head .av { width: 64px; height: 64px; border-radius: 18px; font-size: 2rem; border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+.head h1 { font: 800 clamp(2rem, 4vw, 3rem)/1 var(--font-display); font-variation-settings: "wdth" 80; letter-spacing: -0.02em; }
+.head p { color: var(--muted); }
+.head .chip { margin-left: auto; }
+.card { background: var(--white); border: 2px solid var(--ink); border-radius: 22px; padding: clamp(16px, 2.4vw, 26px); display: grid; gap: 14px; min-width: 0; }
+.card textarea { width: 100%; min-height: 150px; resize: vertical; border: 2px solid var(--ink); border-radius: 14px; background: var(--paper); padding: 12px 14px; line-height: 1.5; font-size: 0.95rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.actions .sp { flex: 1; }
+.kbd { font: 500 0.72rem var(--font-mono); color: var(--muted); }
+.out h3 { font: 800 clamp(1.5rem, 2.6vw, 2.1rem)/1.05 var(--font-display); font-variation-settings: "wdth" 85; letter-spacing: -0.01em; text-wrap: balance; }
+.out-top { display: flex; flex-wrap: wrap; gap: 10px 16px; justify-content: space-between; align-items: flex-start; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.gate { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; font-size: 0.92rem; }
+.gate.warn { background: var(--warn-soft); }
+.gate.ok { background: var(--ok-soft); }
+.gate b { font: 500 0.7rem/1.6 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.facts { display: grid; border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; }
+.facts div { display: grid; grid-template-columns: minmax(120px, 0.38fr) 1fr; gap: 14px; padding: 10px 14px; }
+.facts div + div { border-top: 1px solid var(--paper-2); }
+.facts dt { font-weight: 700; font-size: 0.88rem; }
+.facts dd { margin: 0; font-size: 0.92rem; }
+.steps { padding-left: 20px; display: grid; gap: 6px; font-size: 0.95rem; }
+.draft { position: relative; border: 2px dashed var(--ink); border-radius: 16px; padding: 16px; background: var(--paper); display: grid; gap: 10px; }
+.draft.sent { border-style: solid; border-color: var(--ok); background: #fff; }
+.draft.rejected { border-color: var(--bad); }
+.draft-meta { font: 500 0.74rem/1.4 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); }
+.draft .body { white-space: pre-wrap; font-size: 0.97rem; }
+.draft .body[contenteditable="true"] { outline: 2px solid #8466FF; outline-offset: 4px; border-radius: 4px; background: #fff; }
+.stamp { position: absolute; right: 14px; top: 12px; transform: rotate(-6deg); padding: 4px 10px; border: 2px solid currentColor; border-radius: 6px; font: 500 0.74rem/1.2 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; background: #fff; animation: stamp .3s ease-out; }
+.stamp.ok { color: var(--ok); } .stamp.bad { color: var(--bad); }
+.err { background: #FFE3E6; border: 2px solid var(--bad); border-radius: 14px; padding: 14px 16px; }
+.err b { color: var(--bad); }
+.work { display: flex; align-items: center; gap: 12px; color: var(--muted); }
+.spin { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--paper-2); border-top-color: var(--ink); animation: spin .7s linear infinite; }
+.log { display: grid; gap: 6px; font: 400 0.78rem/1.5 var(--font-mono); }
+.log div { display: grid; grid-template-columns: auto auto 1fr; gap: 10px; align-items: baseline; }
+.log time { color: var(--muted); }
+.log i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px); background: var(--ink); color: var(--haldi); padding: 10px 18px; border-radius: 99px; font: 500 0.8rem var(--font-mono); opacity: 0; transition: .2s; pointer-events: none; z-index: 20; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes stamp { from { transform: rotate(-6deg) scale(1.5); opacity: 0; } }
+@media (max-width: 900px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .side { position: static; max-height: none; }
+  .facts div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><i></i>inheriq<small>Workspace</small></div>
+    <details class="mem" open>
+      <summary><span class="lbl">Company memory (shared by all agents)</span></summary>
+      <textarea id="memory" aria-label="Company memory"></textarea>
+    </details>
+    <div id="groups"></div>
+    <button class="btn" id="runAll" type="button">Run all agents</button>
+  </aside>
+  <main class="main">
+    <div class="bar">
+      <span class="chip" id="status"><i></i>Checking model</span>
+      <span class="chip dark">Sandbox: sends are simulated</span>
+    </div>
+    <details class="conn" id="conn">
+      <summary>Model connection</summary>
+      <div class="row"><input id="gKey" type="password" placeholder="Groq API key" autocomplete="off" aria-label="Groq API key"><input id="gModel" type="text" placeholder="Model name" aria-label="Model name"><button class="btn primary" id="saveG" type="button">Save</button></div>
+      <p>Saved on this computer only, in a local .env file. Never sent anywhere except to the model provider.</p>
+      <details style="margin-top:10px"><summary style="font-weight:600">Add a backup provider (any OpenAI-compatible API)</summary>
+        <div class="row"><input id="aBase" type="text" placeholder="Base URL, e.g. https://api.example.com/v1" aria-label="Backup base URL"><input id="aModel" type="text" placeholder="Model name" aria-label="Backup model"><input id="aKey" type="password" placeholder="API key" autocomplete="off" aria-label="Backup API key"><button class="btn primary" id="saveA" type="button">Save</button></div>
+      </details>
+    </details>
+    <section id="view"></section>
+    <section class="card" aria-label="Audit trail"><span class="lbl" style="color:var(--muted)">Audit trail</span><div class="log" id="log"><div><time></time><i></i><span style="color:var(--muted)">Nothing yet. Run an agent.</span></div></div></section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var now = function () { return new Date().toLocaleTimeString('en-GB', { hour12: false }); };
+  var HDR = { 'Content-Type': 'application/json', 'X-Inheriq': '1' };
+  var MEM0 = 'Company: Acme Dynamics (B2B software). Tone: warm, concise, plain English.\nPlans: Starter $59/month, Growth $179/month, Enterprise custom. Annual plans save 15%.\nRefunds: up to $50 are approved automatically. Above $50 needs the support manager. Returns accepted within 30 days.\nInvoices above $2,000 need the finance lead\'s sign-off. Payment terms: net 30.\nSales: deals above $15k need the sales lead\'s OK. The AI never offers discounts beyond 15%.\nHours: Mon to Fri, 9 AM to 6 PM. Reply in the customer\'s language.';
+  var S = { agents: [], sel: null, R: {}, memory: MEM0, health: null, running: false, stop: false, log: [] };
+  var toastT;
+  function toast(t) { var el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove('show'); }, 2200); }
+  function ag(id) { return S.agents.find(function (a) { return a.id === id; }); }
+  function res(id) { return S.R[id] || (S.R[id] = { status: 'idle', input: null }); }
+  function post(path, body) { return fetch(path, { method: 'POST', headers: HDR, body: JSON.stringify(body) }).then(function (r) { return r.json(); }); }
+  function addLog(a, html) { S.log.unshift({ t: now(), c: a.color, h: html }); renderLog(); }
+
+  function renderLog() {
+    if (!S.log.length) return;
+    $('#log').innerHTML = S.log.slice(0, 8).map(function (l) { return '<div><time>' + l.t + '</time><i style="--c:' + l.c + '"></i><span>' + l.h + '</span></div>'; }).join('');
+  }
+  function renderStatus() {
+    var h = S.health, el = $('#status');
+    if (h && h.ready) { el.className = 'chip ok'; el.innerHTML = '<i></i>Live · ' + esc(h.providers.map(function (p) { return p.name + ' ' + p.model; }).join(' + ')); }
+    else { el.className = 'chip warn'; el.innerHTML = '<i></i>No model key yet'; }
+    $('#conn').open = !(h && h.ready);
+    $('#gModel').placeholder = 'Model name (now: ' + (h ? h.model : '') + ')';
+  }
+  function renderSide() {
+    var groups = {};
+    S.agents.forEach(function (a) { (groups[a.group] = groups[a.group] || []).push(a); });
+    $('#groups').innerHTML = Object.keys(groups).map(function (g) {
+      return '<div class="group"><span class="lbl">' + esc(g) + '</span>' + groups[g].map(function (a) {
+        return '<button class="agent" type="button" data-id="' + a.id + '" aria-selected="' + (a.id === S.sel) + '" style="--c:' + a.color + ';--on:' + a.on + '"><span class="av">' + a.name[0] + '</span><span><b>' + esc(a.name) + '</b><small>' + esc(a.role) + '</small></span><span class="st ' + res(a.id).status + '"></span></button>';
+      }).join('') + '</div>';
+    }).join('');
+  }
+  function renderView() {
+    var a = ag(S.sel); if (!a) return;
+    var R = res(a.id), input = R.input == null ? a.sample : R.input, out = '';
+    if (R.status === 'running') out = '<div class="card"><div class="work"><span class="spin"></span>' + esc(a.name) + ' is working…</div></div>';
+    else if (R.status === 'error') out = '<div class="card"><div class="err"><b>' + esc(R.err.error || 'Something went wrong') + '</b>' + (R.err.hint ? '<p>' + esc(R.err.hint) + '</p>' : '') + '</div></div>';
+    else if (R.status === 'done') out = renderOut(a, R);
+    $('#view').innerHTML =
+      '<div class="head" style="--c:' + a.color + ';--on:' + a.on + '"><span class="av">' + a.name[0] + '</span><div><h1>' + esc(a.name) + '</h1><p>' + esc(a.role) + ' · ' + esc(a.tagline) + '</p></div><span class="chip warn">Rule: ' + esc(a.rule) + '</span></div>' +
+      '<div class="card"><span class="lbl" style="color:var(--muted)">Input (edit it or paste your own)</span><textarea id="input" aria-label="Input">' + esc(input) + '</textarea>' +
+      '<div class="actions"><button class="btn go" id="run" type="button"' + (R.status === 'running' ? ' disabled' : '') + '>Run ' + esc(a.name) + '</button><button class="btn" id="reset" type="button">Reset sample</button><span class="sp"></span><span class="kbd">Cmd or Ctrl + Enter to run</span></div></div>' + out;
+  }
+  function renderOut(a, R) {
+    var d = R.res.data, dec = R.decision, chips = '<span class="chip">' + (R.res.ms / 1000).toFixed(1) + 's</span><span class="chip">' + esc(R.res.provider) + ' · ' + esc(R.res.model) + '</span>' + (R.res.cached ? '<span class="chip warn">Cached result from an earlier run</span>' : '');
+    var gate = d.needs_approval
+      ? '<div class="gate warn"><b>Needs your OK</b><span>' + esc(d.approval_reason || a.rule) + '</span></div>'
+      : '<div class="gate ok"><b>Inside your rules</b><span>' + esc(d.approval_reason || 'Safe to send alone.') + '</span></div>';
+    var facts = d.facts.length ? '<dl class="facts">' + d.facts.map(function (f) { return '<div><dt>' + esc(f.label) + '</dt><dd>' + esc(f.value) + '</dd></div>'; }).join('') + '</dl>' : '';
+    var steps = d.steps.length ? '<ol class="steps">' + d.steps.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' : '';
+    var draft = '';
+    if (d.draft) {
+      var cls = dec === 'approved' || dec === 'auto' ? 'sent' : dec === 'rejected' ? 'rejected' : '';
+      var stamp = dec === 'approved' ? '<div class="stamp ok">Approved · ' + R.at + ' · simulated send</div>' : dec === 'auto' ? '<div class="stamp ok">Sent alone · ' + R.at + ' · simulated</div>' : dec === 'rejected' ? '<div class="stamp bad">Rejected · ' + R.at + '</div>' : '';
+      var btns = !dec && d.needs_approval ? '<div class="actions"><button class="btn ok" id="approve" type="button">Approve and send</button><button class="btn" id="edit" type="button">Edit draft</button><button class="btn" id="reject" type="button">Reject</button></div>' : (dec ? '<div class="actions"><button class="btn" id="undo" type="button">Undo</button></div>' : '');
+      draft = '<div class="draft ' + cls + '">' + stamp + '<div class="draft-meta">' + esc(d.draft.channel) + (d.draft.to ? ' → ' + esc(d.draft.to) : '') + (d.draft.subject ? ' · Subject: ' + esc(d.draft.subject) : '') + '</div><div class="body" id="draftBody">' + esc(d.draft.body) + '</div>' + btns + '</div>';
+    }
+    return '<div class="card out"><div class="out-top"><h3>' + esc(d.headline) + '</h3><div class="chips">' + chips + '</div></div>' + gate + facts + steps + draft + '</div>';
+  }
+
+  async function run(id) {
+    var a = ag(id), R = res(id);
+    if (R.input == null) R.input = a.sample;
+    R.status = 'running'; R.decision = null; renderSide(); if (S.sel === id) renderView();
+    try {
+      var out = await post('/api/run', { agent: id, input: R.input, memory: S.memory });
+      if (out.ok) {
+        R.status = 'done'; R.res = out;
+        var d = out.data;
+        if (d.draft && !d.needs_approval) { R.decision = 'auto'; R.at = now(); addLog(a, '<b>' + esc(a.name) + '</b> sent a message on its own, inside your rules (simulated).'); }
+        else if (d.draft) addLog(a, '<b>' + esc(a.name) + '</b> drafted a message and is waiting for your OK.');
+        else addLog(a, '<b>' + esc(a.name) + '</b> finished: ' + esc(d.headline));
+      } else { R.status = 'error'; R.err = out; }
+    } catch (e) { R.status = 'error'; R.err = { error: 'Could not reach the local server.', hint: 'Check that node server.js is still running in the terminal.' }; }
+    renderSide(); if (S.sel === id) renderView();
+  }
+  async function runAll() {
+    var btn = $('#runAll');
+    if (S.running) { S.stop = true; btn.textContent = 'Stopping…'; return; }
+    S.running = true; S.stop = false; btn.textContent = 'Stop'; var t0 = Date.now(), ok = 0;
+    for (var i = 0; i < S.agents.length; i++) {
+      if (S.stop) break;
+      S.sel = S.agents[i].id; renderSide(); await run(S.sel); if (res(S.sel).status === 'done') ok++;
+    }
+    S.running = false; btn.textContent = 'Run all agents';
+    toast(ok + ' of ' + S.agents.length + ' agents finished in ' + Math.round((Date.now() - t0) / 1000) + 's');
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target, a;
+    var ab = t.closest('.agent'); if (ab) { S.sel = ab.dataset.id; renderSide(); renderView(); return; }
+    if (t.closest('#run')) { run(S.sel); return; }
+    if (t.closest('#reset')) { res(S.sel).input = null; res(S.sel).status = 'idle'; renderView(); return; }
+    if (t.closest('#runAll')) { runAll(); return; }
+    a = ag(S.sel); var R = a && res(a.id);
+    if (t.closest('#edit')) {
+      var b = $('#draftBody'), on = b.getAttribute('contenteditable') === 'true';
+      if (on) { b.removeAttribute('contenteditable'); R.res.data.draft.body = b.textContent; $('#edit').textContent = 'Edit draft'; }
+      else { b.setAttribute('contenteditable', 'true'); b.focus(); $('#edit').textContent = 'Done editing'; }
+      return;
+    }
+    if (t.closest('#approve')) {
+      var bb = $('#draftBody'); if (bb && bb.textContent !== R.res.data.draft.body) { R.res.data.draft.body = bb.textContent; R.edited = true; }
+      R.decision = 'approved'; R.at = now(); addLog(a, '<b>You</b> approved ' + esc(a.name) + '’s draft' + (R.edited ? ' with edits' : '') + '. Sent (simulated).'); renderView(); return;
+    }
+    if (t.closest('#reject')) { R.decision = 'rejected'; R.at = now(); addLog(a, '<b>You</b> rejected ' + esc(a.name) + '’s draft. Nothing was sent.'); renderView(); return; }
+    if (t.closest('#undo')) { R.decision = null; renderView(); return; }
+  });
+  document.addEventListener('input', function (e) { if (e.target.id === 'input') res(S.sel).input = e.target.value; if (e.target.id === 'memory') S.memory = e.target.value; });
+  document.addEventListener('keydown', function (e) { if (e.target.id === 'input' && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); run(S.sel); } });
+
+  async function refreshHealth() { try { S.health = await (await fetch('/api/health')).json(); } catch (e) { S.health = null; } renderStatus(); }
+  $('#saveG').addEventListener('click', async function () {
+    var key = $('#gKey').value.trim(), model = $('#gModel').value.trim();
+    if (!key && !model) { toast('Paste a key first'); return; }
+    await post('/api/provider', { slot: 'groq', key: key, model: model }); $('#gKey').value = ''; await refreshHealth(); toast('Saved. Ready to run');
+  });
+  $('#saveA').addEventListener('click', async function () {
+    var base = $('#aBase').value.trim(), model = $('#aModel').value.trim(), key = $('#aKey').value.trim();
+    if (!base || !model || !key) { toast('Fill in all three fields'); return; }
+    await post('/api/provider', { slot: 'alt', base: base, model: model, key: key }); $('#aKey').value = ''; await refreshHealth(); toast('Backup provider saved');
+  });
+
+  $('#memory').value = MEM0;
+  Promise.all([fetch('/api/agents').then(function (r) { return r.json(); }), refreshHealth()]).then(function (v) {
+    S.agents = v[0]; S.sel = S.agents[0].id; renderSide(); renderView();
+  });
+})();
+</script>
+</body>
+</html>
